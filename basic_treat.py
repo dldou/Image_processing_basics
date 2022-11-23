@@ -22,15 +22,43 @@ def image_importation(file_path):
     return image
 
 
-def image_show(image, title):
+
+def image_show(image1, image2,
+               suptitle,
+               gray=False,
+               subtitle1="Image", subtitle2="Processed image",
+               file_path=""):
+    """
+        Displaying function to compare image before and after processing
+    """
     
-    plt.figure()
-    plt.title(title + " $({}x{})$".format(image.shape[0], image.shape[1]))
-    plt.axis("off")
-    plt.imshow(image)
+    fig, axes = plt.subplots(1,2)
+    
+    fig.suptitle(suptitle)
+    
+    #Image before
+    axes[0].imshow(image1)
+    axes[0].set_title(subtitle1 + " $({}x{})$".format(image1.shape[0], image1.shape[1]))
+    axes[0].set_axis_off()
+    
+    #Image after
+    if gray:
+        axes[1].imshow(image2, cmap='gray')
+    else:
+        axes[1].imshow(image2)
+        
+    axes[1].set_title(subtitle2 + " $({}x{})$".format(image2.shape[0], image2.shape[1]))
+    axes[1].set_axis_off()
+    
+    #Save 
+    plt.savefig(file_path + suptitle + ".pdf")
+    
+    #Show
     plt.show()
     
-    return None
+    
+    
+    
 
 def red_extract(image):
     
@@ -52,14 +80,16 @@ def neg(image):
     
     return res
 
+
 def to_grey(image):
     
-    res = np.copy(image)
+    res = np.zeros((image.shape[0], image.shape[0]))
     
     #pix_value_res = 0.299*pix_value_red + 0.587∗pix_value_green + 0.114∗pix_value_blue
-    res[:,:,:] = 0.229*res[:,:,0] + 0.587*res[:,:,1] + 0.114*res[:,:,2] 
+    res = 0.229*image[:,:,0] + 0.587*image[:,:,1] + 0.114*image[:,:,2] 
     
     return res
+
 
 def sepia(image, image_red_coeff, image_green_coeff, image_blue_coeff):
     
@@ -72,20 +102,25 @@ def sepia(image, image_red_coeff, image_green_coeff, image_blue_coeff):
     
     for k in range(3):
         
-        res[:,:,k] = image_red_coeff[k]*image[:,:,0] + image_green_coeff[k]*image[:,:,1] + image_blue_coeff[k]*image[:,:,2]
+        res[:,:,k] = np.where(image_red_coeff[k]*image[:,:,0] + image_green_coeff[k]*image[:,:,1] + image_blue_coeff[k]*image[:,:,2] < 255,
+                              image_red_coeff[k]*image[:,:,0] + image_green_coeff[k]*image[:,:,1] + image_blue_coeff[k]*image[:,:,2],
+                              255
+                             )
     
     return res
+
 
 def contrast(image):
     
     res = np.copy(image)
-    
-    res[res<30] = 0
-    res[res>=225] = 255
-    res[res>=30 and res<225] = (255.0/195.0)*(res[res>=30 and res<225]-30)+0.5
+
+    res = np.where(res<30, 0, (255.0/195.0)*(res-30)+0.5)
+    res = np.where(res>225, 255, (255.0/195.0)*(res-30)+0.5)
+    res = res.astype(int)
     
     return res
     
+
 def grey_threshold(grey_image, threshold):
     
     res = np.copy(grey_image)
@@ -95,12 +130,18 @@ def grey_threshold(grey_image, threshold):
     
     return res
 
+
 def color_threshold(image, threshold):
     
     res = np.copy(image)
     
-    res[res<=threshold] = 0
-    res[res>threshold]  = 255
+    res = np.where(res<=threshold,
+                   0, 
+                   res)
+    
+    res = np.where(res>threshold,
+                   255, 
+                   res)
     
     return res
 
