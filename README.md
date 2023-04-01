@@ -6,7 +6,7 @@
 * [Setup](#setup)
 
 ## General info
-This project contained some of the very pre-processing functions such as spectral filtering or converters to red. A special transform named 
+This project contained some of the very pre-processing functions such as spectral filtering or converters to red. A special transform named "photomaton" can also be found.
 
 
 ## Technologies
